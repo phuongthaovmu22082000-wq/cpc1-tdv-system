@@ -40,14 +40,14 @@ Mở http://localhost:3000
 
 ## Scripts
 
-| Lệnh | Mô tả |
-|---|---|
-| `npm run dev` | Chạy dev server |
-| `npm run build` | Build production |
-| `npm run start` | Chạy production build |
-| `npm run lint` | Kiểm tra lint |
-| `npm run typecheck` | Kiểm tra TypeScript |
-| `npm run format` | Format code với Prettier |
+| Lệnh                   | Mô tả                           |
+| ---------------------- | ------------------------------- |
+| `npm run dev`          | Chạy dev server                 |
+| `npm run build`        | Build production                |
+| `npm run start`        | Chạy production build           |
+| `npm run lint`         | Kiểm tra lint                   |
+| `npm run typecheck`    | Kiểm tra TypeScript             |
+| `npm run format`       | Format code với Prettier        |
 | `npm run format:check` | Kiểm tra format (dùng trong CI) |
 
 ## Environment Variables
@@ -62,6 +62,29 @@ Dự án được xây dựng theo `CPC1_AI_Agent_Build_Specification.md`, thự
 từng TASK. Xem `docs/PROGRESS.md` để biết tiến độ.
 
 - [x] TASK 001 — Initialize Project
-- [ ] TASK 002 — Database
+- [x] TASK 002 — Database
 - [ ] TASK 003 — Authentication
 - [ ] ... (xem specification để biết danh sách đầy đủ TASK 001–020)
+
+## Database
+
+Schema quản lý bằng Drizzle ORM, migration bằng `drizzle-kit`. Xem
+`db/schema/` cho định nghĩa bảng và `db/migrations/` cho migration đã
+generate.
+
+```bash
+# Tạo migration mới sau khi sửa schema trong db/schema/
+npm run db:generate
+
+# Áp dụng migration vào database (DATABASE_URL trong .env.local)
+npm run db:migrate
+
+# Seed dữ liệu configuration: roles, permissions, customer_types, territories
+npm run db:seed
+
+# Xem dữ liệu qua Drizzle Studio (GUI)
+npm run db:studio
+```
+
+Không sửa schema production thủ công — mọi thay đổi phải qua migration file
+(xem Spec Section 9, rule #9–10 và Section 27.4).
