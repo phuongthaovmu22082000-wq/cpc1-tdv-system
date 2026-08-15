@@ -26,7 +26,7 @@
 
 # Production: migrate trước khi build
 [context.production]
-  command = "npm run db:migrate && npm run build"
+  command = "npm run build"
 
 # Preview: chỉ build (không migrate tránh conflict)
 [context.deploy-preview]
