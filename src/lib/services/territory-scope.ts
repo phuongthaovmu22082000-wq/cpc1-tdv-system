@@ -34,9 +34,7 @@ export interface ScopeContext {
  * Gọi một lần ở đầu mỗi request — truyền xuống toàn bộ service calls trong
  * request đó thay vì query DB nhiều lần.
  */
-export async function resolveScopeContext(
-  currentEmployee: CurrentEmployee,
-): Promise<ScopeContext> {
+export async function resolveScopeContext(currentEmployee: CurrentEmployee): Promise<ScopeContext> {
   const [territoryIds, customerIds, employeeIds] = await Promise.all([
     getAllowedTerritories(currentEmployee),
     getAllowedCustomerIds(currentEmployee),

@@ -9,16 +9,16 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 | 003  | Authentication     | ✅ Done    |
 | 004  | RBAC               | ✅ Done    |
 | 005  | Territory Scope    | ✅ Done    |
-| 006  | Employee           | ⬜ Pending |
-| 007  | Customer           | ⬜ Pending |
-| 008  | Product            | ⬜ Pending |
-| 009  | Sales              | ⬜ Pending |
-| 010  | Prescription       | ⬜ Pending |
-| 011  | Tender             | ⬜ Pending |
-| 012  | Daily Report       | ⬜ Pending |
-| 013  | KPI                | ⬜ Pending |
+| 006  | Employee           | ✅ Done    |
+| 007  | Customer           | ✅ Done    |
+| 008  | Product            | ✅ Done    |
+| 009  | Sales              | ✅ Done    |
+| 010  | Prescription       | ✅ Done    |
+| 011  | Tender             | ✅ Done    |
+| 012  | Daily Report       | ✅ Done    |
+| 013  | KPI                | ✅ Done    |
 | 014  | Dashboard          | ⬜ Pending |
-| 015  | Lost Sale          | ⬜ Pending |
+| 015  | Lost Sale          | ✅ Done    |
 | 016  | Notifications      | ⬜ Pending |
 | 017  | n8n                | ⬜ Pending |
 | 018  | Audit              | ⬜ Pending |
