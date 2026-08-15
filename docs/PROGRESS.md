@@ -8,7 +8,7 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 | 002  | Database           | ✅ Done    |
 | 003  | Authentication     | ✅ Done    |
 | 004  | RBAC               | ✅ Done    |
-| 005  | Territory Scope    | ⬜ Pending |
+| 005  | Territory Scope    | ✅ Done    |
 | 006  | Employee           | ⬜ Pending |
 | 007  | Customer           | ⬜ Pending |
 | 008  | Product            | ⬜ Pending |
