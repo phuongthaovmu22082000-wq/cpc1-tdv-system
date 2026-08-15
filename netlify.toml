@@ -1,5 +1,4 @@
 # CPC1 — Netlify deployment configuration
-# TASK 020: Production setup
 
 [build]
   command = "npm run build"
@@ -7,37 +6,32 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  NPM_FLAGS = "--legacy-peer-deps"
 
-# Next.js on Netlify requires the @netlify/plugin-nextjs plugin
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Security headers (redundant với middleware.ts, tốt hơn là có cả 2 lớp)
+# Security headers (lớp 2, middleware.ts là lớp 1)
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
 
-# Cache buster cho static assets
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Các biến môi trường bắt buộc cần được cấu hình tay trong Netlify Dashboard:
-# DATABASE_URL       — Neon/Supabase PostgreSQL connection string
-# AUTH_SECRET        — random secret ≥ 32 ký tự
-# NEXT_PUBLIC_APP_URL — https://your-site.netlify.app
-# NODE_ENV           — production
-#
-# Xem .env.example để biết danh sách đầy đủ.
-# KHÔNG commit file .env thật vào git.
-
+# Production: migrate trước khi build
 [context.production]
   command = "npm run db:migrate && npm run build"
 
+# Preview: chỉ build (không migrate tránh conflict)
 [context.deploy-preview]
+  command = "npm run build"
+
+# Branch deploys
+[context.branch-deploy]
   command = "npm run build"
