@@ -21,7 +21,7 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(1).optional(),
 
   // Public app URL
-  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_APP_URL: z.string().default('http://localhost:3000'),
 
   // n8n integration (TASK 017)
   N8N_WEBHOOK_URL: z.string().url().optional(),
