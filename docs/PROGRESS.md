@@ -17,10 +17,10 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 | 011  | Tender             | ✅ Done    |
 | 012  | Daily Report       | ✅ Done    |
 | 013  | KPI                | ✅ Done    |
-| 014  | Dashboard          | ⬜ Pending |
+| 014  | Dashboard          | ✅ Done    |
 | 015  | Lost Sale          | ✅ Done    |
 | 016  | Notifications      | ✅ Done    |
-| 017  | n8n                | ⬜ Pending |
+| 017  | n8n                | ✅ Done    |
 | 018  | Audit              | ✅ Done    |
 | 019  | Security Test      | ✅ Done    |
 | 020  | Production         | ✅ Done    |
@@ -366,3 +366,93 @@ thống (Spec Section 11), implement đầy đủ Authorization Order 8 bước:
   canAccessCustomer/canAccessEmployee.
 
 **Next task:** TASK 005 — Territory Scope.
+
+---
+
+## TASK 014 — Dashboard — Báo cáo
+
+**Status:** ✅ Completed
+
+**Implemented:**
+
+- `src/app/dashboard/data.ts`: Server-side data loader tổng hợp 7 cards (Spec
+  14.2) trong 1 lần render: doanh số tháng, KPI achievement (%), kê đơn tháng,
+  active customers, lost sale count, tender đang xử lý, daily report hôm nay.
+- `src/components/ui/stat-card.tsx`: StatCard component tái sử dụng, hỗ trợ
+  highlight warn/ok/neutral.
+- `src/app/dashboard/page.tsx`: Server Component, `requireAuth()` + `loadDashboardData()`
+  chạy server-side. Format VND tự động (tỷ/triệu). Lost Sale và Daily Report
+  hiển thị màu cảnh báo khi cần chú ý.
+
+**Files changed:** `data.ts`, `page.tsx` (dashboard), `stat-card.tsx`
+
+**Database changes:** Không có.
+
+**Build/Tests:** lint, typecheck, build PASS. HTTP /dashboard no-auth → 307.
+
+**Next task:** TASK 017 — n8n.
+
+---
+
+## TASK 017 — n8n — Báo cáo
+
+**Status:** ✅ Completed
+
+**Implemented:**
+
+- `src/lib/services/n8n-service.ts`: Outbound webhook client trigger 6 workflows
+  (WF01-WF06 — Spec Section 19): `triggerDailyReportReminder`,
+  `triggerLostSaleDetection`, `triggerTenderReminder`, `triggerKpiCalculation`,
+  `triggerMonthlyKpiReport`, `triggerSheetsImport`. Không crash nếu
+  N8N_WEBHOOK_URL chưa cấu hình (dev mode graceful skip).
+- `src/app/api/webhook/n8n/route.ts`: Inbound webhook API route cho n8n gọi
+  ngược lại app (machine-to-machine auth qua X-Webhook-Secret header). Hỗ trợ
+  action `create_notification` và `audit_log`. Trả 400 với message rõ ràng
+  cho unknown action.
+
+**Files changed:** `n8n-service.ts`, `api/webhook/n8n/route.ts`
+
+**Database changes:** Không có.
+
+**Build/Tests:** lint, typecheck, build PASS. `POST /api/webhook/n8n` unknown
+action → 400 với error message đúng.
+
+---
+
+## 🎉 TẤT CẢ 20 TASKS HOÀN THÀNH
+
+### Tổng kết kiến trúc
+
+```
+TASK 001  Next.js 16 + TypeScript + Tailwind + ESLint + Prettier
+TASK 002  PostgreSQL 16 + Drizzle ORM, 24 bảng, migration, seed
+TASK 003  Auth: bcrypt + session DB, login page, requireAuth
+TASK 004  RBAC: hasPermission, requirePermission, scope functions
+TASK 005  Territory Scope: ScopeContext, resolveScopeContext
+TASK 006  Employee Service: CRUD, territory assign, reset password
+TASK 007  Customer Service: CRUD, scope filter, employee assign
+TASK 008  Product Service: CRUD, product groups
+TASK 009  Sales Service: ownership enforcement (Spec 12.2)
+TASK 010  Prescription Service: scope validation (Spec 12.3)
+TASK 011  Tender Service: status machine (Spec 12.4), history
+TASK 012  Daily Report Service: upsert, unique (employee, date)
+TASK 013  KPI Service: target, result, achievement rate
+TASK 014  Dashboard UI: 7 stat cards theo Spec 14.2
+TASK 015  Lost Sale Engine: 4 tháng lịch đúng (Spec 12.6)
+TASK 016  Notification Service: CRUD, markRead, markAllRead
+TASK 017  n8n: outbound trigger (WF01-WF06) + inbound webhook API
+TASK 018  Audit Logger: append-only, auto-sanitize sensitive fields
+TASK 019  Security Middleware: headers, rate limit /login, redirect /
+TASK 020  Netlify: netlify.toml, build config, production context
+```
+
+### Git history
+
+- f1e05a2 TASK 001: Initialize project
+- a36e91e TASK 002: Database
+- 4f1861c TASK 003: Authentication
+- dc56f71 TASK 004: RBAC Authorization Engine
+- 623f915 TASK 005: Territory Scope resolver
+- 426945f TASK 006-015: Service layer
+- 166e272 TASK 016/018/019/020: Notifications, Audit, Security, Netlify
+- [final] TASK 014/017: Dashboard UI + n8n integration
