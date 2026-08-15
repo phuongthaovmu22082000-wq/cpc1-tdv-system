@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE_NAME } from '@/lib/auth/session';
+
+// KHÔNG import session.ts ở đây — session.ts dùng Node.js crypto module
+// không tương thích với Edge Runtime. Middleware chỉ cần biết tên cookie
+// để kiểm tra xem có session hay không (chưa verify hash — việc verify
+// hash thật sự xảy ra trong getCurrentEmployee() ở Server Component/Action).
+const SESSION_COOKIE_NAME = 'cpc1_session';
 
 /**
  * Middleware — TASK 019 Security
