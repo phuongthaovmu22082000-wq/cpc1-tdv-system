@@ -6,7 +6,7 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 | ---- | ------------------ | ---------- |
 | 001  | Initialize Project | ✅ Done    |
 | 002  | Database           | ✅ Done    |
-| 003  | Authentication     | ⬜ Pending |
+| 003  | Authentication     | ✅ Done    |
 | 004  | RBAC               | ⬜ Pending |
 | 005  | Territory Scope    | ⬜ Pending |
 | 006  | Employee           | ⬜ Pending |
@@ -224,3 +224,91 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 **Next task:**
 
 - TASK 003 — Authentication (Login, Session, Current user).
+
+---
+
+## TASK 003 — Authentication — Báo cáo
+
+**Status:** ✅ Completed
+
+**Implemented:**
+
+- 2 bảng kỹ thuật bổ sung (ngoài 22 domain entities từ TASK 002):
+  `credentials` (bcrypt password hash, 1-1 với employees, PK = FK) và
+  `sessions` (SHA-256 hash của token, expires_at, revoked_at, ip, user_agent).
+- Migration `0001_add_auth_tables.sql` đã apply — DB hiện có 24 bảng.
+- `src/lib/auth/password.ts`: hash/verify bằng bcryptjs (pure JS, SALT=12,
+  tương thích Netlify serverless không cần native binary).
+- `src/lib/auth/session.ts`: tạo session (raw token 32-byte hex chỉ trả về
+  một lần, DB lưu SHA-256 hash), verify (check hash + expires_at + revoked_at),
+  thu hồi theo token và thu hồi tất cả session của một employee.
+- `src/lib/auth/current-user.ts`: `getCurrentEmployee()` (đọc cookie → verify
+  session → resolve employee+role từ DB, trả null nếu không hợp lệ) và
+  `requireAuth()` (redirect /login nếu null — bước 1 trong Authorization Order
+  Spec Section 11.1).
+- `src/lib/validation/auth.ts`: Zod schema validate email/password.
+- `src/lib/services/auth-service.ts`: business logic login (generic error
+  message cho mọi thất bại để chống dò email hợp lệ, check inactive AFTER
+  password verify để chống timing oracle) và logout.
+- `src/app/login/actions.ts`: Server Actions `loginAction`/`logoutAction`,
+  set cookie httpOnly/secure/sameSite=lax, call service, redirect.
+- `src/components/forms/login-form.tsx`: form UI (email, password, error,
+  loading state — đúng Spec Section 14.1), dùng `useActionState` +
+  `useFormStatus`.
+- `src/app/login/page.tsx`: trang login, redirect /dashboard nếu đã đăng nhập.
+- `/dashboard` bảo vệ bằng `requireAuth()` — unauthenticated → 307 redirect.
+- `db/seed-admin.ts` + script `db:seed:admin`: bootstrap tài khoản ADMIN đầu
+  tiên từ env vars (ADMIN_EMPLOYEE_CODE, ADMIN_FULL_NAME, ADMIN_EMAIL,
+  ADMIN_PASSWORD), idempotent, không hard-code business data.
+
+**Files changed:**
+
+- `db/schema/auth.ts`, `db/schema/index.ts`, `db/schema/relations.ts`
+- `db/migrations/0001_add_auth_tables.sql` + `meta/`
+- `db/seed-admin.ts`
+- `src/lib/auth/{password,session,current-user}.ts`
+- `src/lib/validation/auth.ts`
+- `src/lib/services/auth-service.ts`
+- `src/app/login/{actions,page}.tsx`
+- `src/components/forms/login-form.tsx`
+- `src/components/layout/{topbar,app-shell}.tsx` (thêm currentEmployee prop)
+- `src/app/dashboard/page.tsx` (thêm requireAuth)
+- `src/app/page.tsx` (thêm link /login)
+- `.env.example`, `package.json`
+
+**Database changes:**
+
+- Tạo mới 2 bảng: `credentials`, `sessions`.
+
+**Tests:**
+
+- AUTH-001 (valid account → login success): PASS
+- AUTH-002 (invalid password → rejected): PASS
+- Non-existent email → rejected với cùng error message như sai password: PASS
+- Session resolve đúng employee (admin@cpc1.local → roleCode: ADMIN): PASS
+- Logout → session bị revoke (findValidSession trả null): PASS
+- HTTP smoke test: `GET /dashboard` (no cookie) → 307 redirect /login: PASS
+- `GET /login` → 200: PASS, `GET /` → 200: PASS
+- `npm run build` → PASS (route /dashboard và /login đều Dynamic ƒ — đúng)
+
+**Build:** PASS — lint, typecheck, format:check, build đều sạch.
+
+**Security checks:**
+
+- Token không bao giờ lưu trong DB — chỉ SHA-256 hash (Spec Section 19).
+- Generic error message cho mọi thất bại login (không lộ email hợp lệ).
+- Cookie: httpOnly, secure (production), sameSite=lax.
+- Session revoke thật sự (DB-based), không phải stateless JWT — logout thật
+  sự vô hiệu hoá session, không thể tái sử dụng token cũ.
+- inactive employee bị từ chối kể cả khi session còn hạn.
+- bootstrap admin dùng env var, không hard-code (Spec 1.5).
+
+**Known issues:**
+
+- Chưa có rate limiting cho endpoint login (chống brute force) — nằm ngoài
+  phạm vi TASK 003, cần bổ sung ở TASK 019 (Security Test) hoặc tầng CDN
+  (Netlify Edge Rules).
+- Không log thất bại login ra audit_logs ở TASK này (chưa có audit service) —
+  sẽ thêm ở TASK 018 (Audit).
+
+**Next task:** TASK 004 — RBAC (Authorization Engine).

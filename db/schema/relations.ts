@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { permissions, rolePermissions, roles } from './authorization';
+import { credentials, sessions } from './auth';
 import { employeeTerritories, employees, territories } from './organization';
 import { customerTypes, customers, employeeCustomers } from './customer';
 import { productGroups, products } from './product';
@@ -39,6 +40,11 @@ export const territoriesRelations = relations(territories, ({ many }) => ({
 
 export const employeesRelations = relations(employees, ({ one, many }) => ({
   role: one(roles, { fields: [employees.roleId], references: [roles.id] }),
+  credential: one(credentials, {
+    fields: [employees.id],
+    references: [credentials.employeeId],
+  }),
+  sessions: many(sessions),
   employeeTerritories: many(employeeTerritories),
   employeeCustomers: many(employeeCustomers),
   salesTransactions: many(salesTransactions),
@@ -49,6 +55,14 @@ export const employeesRelations = relations(employees, ({ one, many }) => ({
   kpiResults: many(kpiResults),
   notifications: many(notifications),
   auditLogs: many(auditLogs),
+}));
+
+export const credentialsRelations = relations(credentials, ({ one }) => ({
+  employee: one(employees, { fields: [credentials.employeeId], references: [employees.id] }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  employee: one(employees, { fields: [sessions.employeeId], references: [employees.id] }),
 }));
 
 export const employeeTerritoriesRelations = relations(employeeTerritories, ({ one }) => ({
