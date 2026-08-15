@@ -5,7 +5,7 @@
  *   territory_id = validated employee territory
  *   customer_id = validated customer (phải trong scope)
  */
-import { eq, and, gte, lte, inArray, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
 import { salesTransactions, customers, products, territories, employees } from '../../../db/schema';
 import type { CurrentEmployee } from '@/lib/auth/current-user';
