@@ -7,7 +7,7 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
 | 001  | Initialize Project | ✅ Done    |
 | 002  | Database           | ✅ Done    |
 | 003  | Authentication     | ✅ Done    |
-| 004  | RBAC               | ⬜ Pending |
+| 004  | RBAC               | ✅ Done    |
 | 005  | Territory Scope    | ⬜ Pending |
 | 006  | Employee           | ⬜ Pending |
 | 007  | Customer           | ⬜ Pending |
@@ -312,3 +312,57 @@ Theo dõi theo `CPC1_AI_Agent_Build_Specification.md` Section 29 (Task Breakdown
   sẽ thêm ở TASK 018 (Audit).
 
 **Next task:** TASK 004 — RBAC (Authorization Engine).
+
+---
+
+## TASK 004 — RBAC — Báo cáo
+
+**Status:** ✅ Completed
+
+**Implemented:**
+`src/lib/authorization/index.ts` — Authorization Engine duy nhất của toàn hệ
+thống (Spec Section 11), implement đầy đủ Authorization Order 8 bước:
+
+- `hasPermission(employee, code)`: query DB role→permissions, trả boolean.
+- `requirePermission(employee, code)`: redirect /dashboard nếu không có quyền
+  (Note: sẽ upgrade sang `forbidden()` khi Next.js version hỗ trợ API này).
+- `getAllowedTerritories(employee)`: ADMIN/MANAGER → null (unrestricted);
+  TDV/SUPERVISOR → danh sách territory_id active (end_date IS NULL).
+- `canAccessTerritory(employee, territoryId)`: kiểm tra territory trong scope.
+- `canAccessCustomer(employee, customerId)`: ADMIN/MANAGER → true; TDV/SUPERVISOR
+  → phải có employee_customers active (Spec Section 11.2 TDV rule).
+- `canAccessEmployee(employee, targetId)`: ADMIN → tất cả; TDV → chỉ chính mình;
+  MANAGER/SUPERVISOR → employee trong territory chung.
+- `getAllowedCustomerIds(employee)`: trả null hoặc []string dùng làm WHERE
+  clause trong service layer (TASK 007, 009...).
+- `getAllowedEmployeeIds(employee)`: tương tự cho employee scope.
+- `requirePermissionOrRedirect(employee, code, redirectTo)`: variant redirect-
+  friendly cho page server components.
+
+**Files changed:**
+
+- `src/lib/authorization/index.ts` (mới)
+- `src/lib/authorization/.gitkeep` (xóa)
+- `docs/PROGRESS.md`
+
+**Database changes:** Không có.
+
+**Tests:**
+
+- ADMIN hasPermission(DASHBOARD_VIEW) → true: PASS
+- ADMIN hasPermission(NONEXISTENT) → false: PASS
+- ADMIN getAllowedTerritories → null (unrestricted): PASS
+- ADMIN canAccessCustomer(any) → true: PASS
+- ADMIN getAllowedEmployeeIds → null (unrestricted): PASS
+- lint, typecheck, build: PASS
+
+**Security checks:**
+
+- Module này là SINGLE SOURCE OF TRUTH cho authorization — không self-check
+  role ở nơi khác.
+- Permission query qua DB (không cache) để đảm bảo thay đổi permission có
+  hiệu lực ngay.
+- TDV không thể override ownership (Spec Section 11.2) — enforced qua
+  canAccessCustomer/canAccessEmployee.
+
+**Next task:** TASK 005 — Territory Scope.
